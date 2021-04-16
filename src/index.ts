@@ -1,32 +1,63 @@
 import { context, fillPage, getSize, renderText } from './canvas';
-import { loadImage } from './util/loadImage';
+import { captureVideo } from './util/captureVideo';
 import { scaleAndCenter } from './util/scaleAndCenter';
+
+declare global {
+  const ml5: any;
+}
 
 (async () => {
   fillPage();
   printLoading();
 
-  const image = await loadImage('https://repos.amatiasq.com/genara/img/3.png');
+  const video = await captureVideo({
+    facingMode: 'user',
+    width: { exact: 1280 },
+    height: { exact: 720 },
+  });
 
+  const poseNet = ml5.poseNet(video);
+
+  let poses: any[] = [];
+
+  detect();
   frame();
 
   function frame() {
     const screen = getSize();
-    const rect = scaleAndCenter(image, screen);
-
-    context.clearRect(0, 0, screen.width, screen.height);
-    context.drawImage(image, rect.x, rect.y, rect.width, rect.height);
-
-    renderText(
-      'Hello world',
-      screen.width / 2,
-      screen.height / 2,
-      '40px arial',
-      'white',
-      'black',
+    const rect = scaleAndCenter(
+      {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      },
+      screen,
     );
 
+    video.width = rect.width;
+    video.height = rect.height;
+
+    context.clearRect(0, 0, screen.width, screen.height);
+    context.drawImage(video, rect.x, rect.y, rect.width, rect.height);
+
+    poses.forEach(({ pose }) => {
+      console.log(pose);
+    });
+
+    // renderText(
+    //   'Hello world',
+    //   screen.width / 2,
+    //   screen.height / 2,
+    //   '40px arial',
+    //   'white',
+    //   'black',
+    // );
+
     requestAnimationFrame(frame);
+  }
+
+  async function detect() {
+    // poses = await poseNet.multiPose();
+    // detect();
   }
 })();
 

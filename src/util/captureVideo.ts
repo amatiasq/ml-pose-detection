@@ -1,4 +1,4 @@
-export async function captureVideo(constraints?: any) {
+export async function captureVideo(constraints?: MediaTrackConstraints) {
   const options = { video: constraints || true };
   const stream = await navigator.mediaDevices.getUserMedia(options);
   const video = document.createElement('video');
